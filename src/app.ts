@@ -1,16 +1,20 @@
 import axios from "axios";
 
-const form = document.querySelector("form")! as HTMLFormElement;
+const form = document.querySelector("form")!;
 const addressInput = document.getElementById("address")! as HTMLInputElement;
 
 const GOOGLE_API_KEY = "AIzaSyCIaAc2c5M3VpbCH6PPq_guwy9lHuowXOs";
+
+declare var google: any;
+
 type GoogleGeocodingResponse = {
   results: { geometry: { location: { lat: number; lng: number } } }[];
   status: "OK" | "ZERO_RESULTS";
 };
-function searchAddresHandler(event: Event) {
+
+function searchAddressHandler(event: Event) {
   event.preventDefault();
-  const enteredAddress = addressInput?.value;
+  const enteredAddress = addressInput.value;
 
   axios
     .get<GoogleGeocodingResponse>(
@@ -23,6 +27,12 @@ function searchAddresHandler(event: Event) {
         throw new Error("Could not fetch location!");
       }
       const coordinates = res.data.results[0].geometry.location;
+      const map = new google.maps.Map(document.getElementById("map"), {
+        center: coordinates,
+        zoom: 16,
+      });
+
+      new google.maps.Marker({ position: coordinates, map: map });
     })
     .catch((err) => {
       alert(err.message);
@@ -30,4 +40,4 @@ function searchAddresHandler(event: Event) {
     });
 }
 
-form?.addEventListener("submit", searchAddresHandler);
+form.addEventListener("submit", searchAddressHandler);
